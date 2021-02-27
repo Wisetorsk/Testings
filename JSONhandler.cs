@@ -10,10 +10,68 @@ namespace TestingDiscordRPGStuff
 {
     public class JSONhandler
     {
+        public bool Verbose { get; set; } = false;
+        // Add if Verbose for all methods
+
         public static string ObjectToJson(Object obj)
         {
             string jsonOut = "{";
 
+            //Translate Fields to JSON
+            foreach (var field in obj.GetType().GetFields()) 
+            {
+                if (typeof(IEnumerable).IsAssignableFrom(field.FieldType)
+                        && !typeof(string).IsAssignableFrom(field.FieldType))
+                { // Checks if the property is an enumerable. (List<T>)
+                    jsonOut += $"\"{field.Name}\":[";
+                    if (field.GetValue(obj) is null)
+                    {
+                        jsonOut += "],";
+                        continue;
+                    }
+                    foreach (var item in (IEnumerable)field.GetValue(obj))
+                    {
+                        if (item is ValueType)
+                        { // Value is a string
+                            if (item is bool)
+                            {
+                                jsonOut += $"{item.ToString().ToLower()},";
+                            }
+                            else
+                            {
+                                jsonOut += $"{item},";
+                            }
+                        }
+                        else
+                        {
+                            jsonOut += $"\"{item}\",";
+                        }
+
+                    }
+                    jsonOut = jsonOut.Remove(jsonOut.Length - 1);
+                    jsonOut += $"],";
+                }
+                else
+                {
+                    if (typeof(ValueType).IsAssignableFrom(field.FieldType))
+                    { // The value is a Value
+                        if (field.GetValue(obj) is bool)
+                        {
+                            jsonOut += $"\"{field.Name}\":{field.GetValue(obj).ToString().ToLower()},";
+                        }
+                        else
+                        {
+                            jsonOut += $"\"{field.Name}\":{field.GetValue(obj)},";
+                        }
+                    }
+                    else
+                    {
+                        jsonOut += $"\"{field.Name}\":\"{field.GetValue(obj)}\",";
+                    }
+                }
+            }
+
+            // Translate Properties to JSON
             foreach (var property in obj.GetType().GetProperties())
             {
                 if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType)
@@ -63,16 +121,41 @@ namespace TestingDiscordRPGStuff
                     }
                 }
             }
+
+            // Translate Methods to JSON
+            foreach (var method in obj.GetType().GetMethods()) 
+            {
+
+            }
+
+            
+
             jsonOut = jsonOut.Remove(jsonOut.Length - 1);
             jsonOut += "}";
             return jsonOut;
         }
 
-
         public static dynamic CreateObjectFromJson(string jsonString)
         {
-            dynamic expand = new ExpandoObject();
+            var expand = new ExpandoObject() as IDictionary<string, Object>;
+            Dictionary<string, string> translated = TranslateJson(jsonString);
+            foreach (var entry in translated)
+            {
+                //Console.WriteLine($"key: {entry.Key}\t val: {entry.Value}");
+                expand.Add(entry.Key, entry.Value);
+            }
+            return expand;
+        }
+
+        /// <summary>
+        /// Translates the json string into dictionary containing variable name and value
+        /// </summary>
+        /// <param name="jsonString"></param>
+        /// <returns></returns>
+        private static Dictionary<string, string> TranslateJson(string jsonString)
+        {
             var content = jsonString.Substring(1, jsonString.Length - 2);
+            var output = new Dictionary<string, string>();
             var elements = new List<string>();
             string element = "";
             string arrayContent = "";
@@ -83,30 +166,42 @@ namespace TestingDiscordRPGStuff
                 {
                     // Start of an array
                     inArray = true;
-                } else if (character == ']')
+                }
+                else if (character == ']')
                 {
                     // End of an array
                     inArray = false;
                     element += arrayContent;
-                } else
+                }
+                else
                 {
                     if (inArray)
                     {
                         if (character != '\\' || character != '"') arrayContent += character;
-                    } else
+                    }
+                    else
                     {
                         if (character != ',' || character != '\\' || character != '"') element += character;
                     }
                 }
-                if (character == ',' && ! inArray)
+                if (character == ',' && !inArray)
                 {
                     elements.Add(element);
                     element = "";
                 }
             }
-            var el = elements.Select(i => i.Replace(@"\", "")).ToList();
-            Console.WriteLine(el);
-            return expand;
+            var el = elements.Select(i => i.Replace(@"\\", "")).ToList();
+            //el.ForEach(Console.WriteLine);
+
+            // Split the formatted list
+
+            foreach (var line in el)
+            {
+                var split = line.Split(':');
+                output.Add(split[0].Replace("\"", ""), split[1].Remove(split[1].Length-1, 1));
+            }
+
+            return output;
         }
     }
 }
