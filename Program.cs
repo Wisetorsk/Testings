@@ -12,11 +12,11 @@ namespace TestingDiscordRPGStuff
         {
             var t = new TestObject();
             var p = JSONhandler.ObjectToJson(t);
-            //Console.WriteLine(p);
+            Console.WriteLine(p);
 
             //t.ReadFromJson(p);
-            var newObj = JSONhandler.CreateObjectFromJson(p);
-            Console.WriteLine(newObj.Collection1);
+            //var newObj = JSONhandler.CreateObjectFromJson(p);
+            //Console.WriteLine(newObj.Collection1);
             
 
         }

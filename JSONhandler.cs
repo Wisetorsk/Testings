@@ -15,124 +15,77 @@ namespace TestingDiscordRPGStuff
 
         public static string ObjectToJson(Object obj)
         {
-            string jsonOut = "{";
+            string jsonOut = $"{{\"name\":\"{obj.GetType().Name}\",";
+            jsonOut += GetFields(obj) + ",";
+            jsonOut += GetProperties(obj) + ",";
+            jsonOut += GetMethods(obj);
 
-            //Translate Fields to JSON
-            foreach (var field in obj.GetType().GetFields()) 
-            {
-                if (typeof(IEnumerable).IsAssignableFrom(field.FieldType)
-                        && !typeof(string).IsAssignableFrom(field.FieldType))
-                { // Checks if the property is an enumerable. (List<T>)
-                    jsonOut += $"\"{field.Name}\":[";
-                    if (field.GetValue(obj) is null)
-                    {
-                        jsonOut += "],";
-                        continue;
-                    }
-                    foreach (var item in (IEnumerable)field.GetValue(obj))
-                    {
-                        if (item is ValueType)
-                        { // Value is a string
-                            if (item is bool)
-                            {
-                                jsonOut += $"{item.ToString().ToLower()},";
-                            }
-                            else
-                            {
-                                jsonOut += $"{item},";
-                            }
-                        }
-                        else
-                        {
-                            jsonOut += $"\"{item}\",";
-                        }
-
-                    }
-                    jsonOut = jsonOut.Remove(jsonOut.Length - 1);
-                    jsonOut += $"],";
-                }
-                else
-                {
-                    if (typeof(ValueType).IsAssignableFrom(field.FieldType))
-                    { // The value is a Value
-                        if (field.GetValue(obj) is bool)
-                        {
-                            jsonOut += $"\"{field.Name}\":{field.GetValue(obj).ToString().ToLower()},";
-                        }
-                        else
-                        {
-                            jsonOut += $"\"{field.Name}\":{field.GetValue(obj)},";
-                        }
-                    }
-                    else
-                    {
-                        jsonOut += $"\"{field.Name}\":\"{field.GetValue(obj)}\",";
-                    }
-                }
-            }
-
-            // Translate Properties to JSON
-            foreach (var property in obj.GetType().GetProperties())
-            {
-                if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType)
-                        && !typeof(string).IsAssignableFrom(property.PropertyType))
-                { // Checks if the property is an enumerable. (List<T>)
-                    jsonOut += $"\"{property.Name}\":[";
-                    if (property.GetValue(obj) is null) {
-                        jsonOut += "],";
-                        continue;
-                    }
-                    foreach (var item in (IEnumerable)property.GetValue(obj))
-                    {
-                        if (item is ValueType)
-                        { // Value is a string
-                            if (item is bool)
-                            {
-                                jsonOut += $"{item.ToString().ToLower()},";
-                            } else
-                            {
-                                jsonOut += $"{item},";
-                            }
-                        }
-                        else
-                        {
-                            jsonOut += $"\"{item}\",";
-                        }
-
-                    }
-                    jsonOut = jsonOut.Remove(jsonOut.Length - 1);
-                    jsonOut += $"],";
-                }
-                else
-                {
-                    if (typeof(ValueType).IsAssignableFrom(property.PropertyType))
-                    { // The value is a Value
-                        if (property.GetValue(obj) is bool)
-                        {
-                            jsonOut += $"\"{property.Name}\":{property.GetValue(obj).ToString().ToLower()},";
-                        } else
-                        {
-                            jsonOut += $"\"{property.Name}\":{property.GetValue(obj)},";
-                        }
-                    }
-                    else
-                    {
-                        jsonOut += $"\"{property.Name}\":\"{property.GetValue(obj)}\",";
-                    }
-                }
-            }
-
-            // Translate Methods to JSON
-            foreach (var method in obj.GetType().GetMethods()) 
-            {
-
-            }
-
-            
-
-            jsonOut = jsonOut.Remove(jsonOut.Length - 1);
             jsonOut += "}";
             return jsonOut;
+        }
+
+        private static string GetMethods(object obj)
+        {
+            string jsonString = "\"methods\":[";
+            foreach (var field in obj.GetType().GetMethods())
+            {
+
+            }
+            jsonString += "]";
+            return jsonString;
+        }
+
+        private static string GetProperties(object obj)
+        {
+            string jsonString = "\"properties\":[";
+            foreach (var field in obj.GetType().GetProperties())
+            {
+                if (typeof(IEnumerable).IsAssignableFrom(field.PropertyType)
+                        && !typeof(string).IsAssignableFrom(field.PropertyType))
+                { // Checks if the property is an enumerable. (List<T>)
+                }
+                else
+                {
+                    var fieldValue = field.GetValue(obj);
+                    if (typeof(ValueType).IsAssignableFrom(field.PropertyType))
+                    {
+                        if (fieldValue is bool)
+                        {
+                            jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldValue.ToString().ToLower()},\"type\":\"{field.PropertyType.Name}\"}},";
+                        }
+                        else
+                        {
+                            jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldValue},\"type\":\"{field.PropertyType.Name}\"}},";
+                        }
+                    }
+                    else
+                    {
+                        jsonString += $"{{\"name\":\"{field.Name}\",\"value\":\"{fieldValue}\",\"type\":\"{field.PropertyType.Name}\"}},";
+                    }
+                }
+            }
+            jsonString = jsonString.Remove(jsonString.Length - 1, 1);
+            jsonString += "]";
+            return jsonString;
+        }
+
+        private static bool IsVal(Object x)
+        {
+            if(typeof(ValueType).IsAssignableFrom((System.Type)x)) {
+                return true;
+            }
+            return false;
+        }
+
+        private static string GetFields(object obj)
+        {
+            string jsonString = "\"fields\":[";
+            foreach (var field in obj.GetType().GetFields())
+            {
+
+            }
+            jsonString += "]";
+            return jsonString;
         }
 
         public static dynamic CreateObjectFromJson(string jsonString)
