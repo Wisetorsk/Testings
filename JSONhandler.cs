@@ -43,6 +43,7 @@ namespace TestingDiscordRPGStuff
                 if (typeof(IEnumerable).IsAssignableFrom(field.PropertyType)
                         && !typeof(string).IsAssignableFrom(field.PropertyType))
                 { // Checks if the property is an enumerable. (List<T>)
+
                 }
                 else
                 {
