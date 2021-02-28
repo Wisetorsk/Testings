@@ -43,7 +43,37 @@ namespace TestingDiscordRPGStuff
                 if (typeof(IEnumerable).IsAssignableFrom(field.PropertyType)
                         && !typeof(string).IsAssignableFrom(field.PropertyType))
                 { // Checks if the property is an enumerable. (List<T>)
+                    var fieldValue = field.GetValue(obj);
+                    var fieldType = $"\"{field.PropertyType.Name}";
+                    var fieldContent = "[";
+                    if (fieldValue is null)
+                    {
+                        fieldType += "<null>\"";
+                        fieldContent += "]";
+                    } else
+                    {
+                        var entries = (IEnumerable)field.GetValue(obj);
+                        foreach (var entry in entries) // A stupid hack because i'm too fucking tired to think properly
+                        {
+                            fieldType += $"<{entry.GetType().Name}>\"";
+                            break;
+                        }
+                        foreach (var entry in (IEnumerable)field.GetValue(obj))
+                        {
+                            if (entry is ValueType)
+                            {
+                                fieldContent += $"{entry},";
+                            } else
+                            {
+                                fieldContent += $"\"{entry}\",";
+                            }
+                            
+                        }
 
+                        fieldContent = fieldContent.Remove(fieldContent.Length - 1, 1);
+                        fieldContent += "]";
+                    }
+                    jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldContent},\"type\":{fieldType.Replace("`1", "")}}},";
                 }
                 else
                 {
@@ -52,16 +82,16 @@ namespace TestingDiscordRPGStuff
                     {
                         if (fieldValue is bool)
                         {
-                            jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldValue.ToString().ToLower()},\"type\":\"{field.PropertyType.Name}\"}},";
+                            jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldValue.ToString().ToLower()},\"type\":\"{field.PropertyType.Name.Replace("`1", "")}\"}},";
                         }
                         else
                         {
-                            jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldValue},\"type\":\"{field.PropertyType.Name}\"}},";
+                            jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldValue},\"type\":\"{field.PropertyType.Name.Replace("`1", "")}\"}},";
                         }
                     }
                     else
                     {
-                        jsonString += $"{{\"name\":\"{field.Name}\",\"value\":\"{fieldValue}\",\"type\":\"{field.PropertyType.Name}\"}},";
+                        jsonString += $"{{\"name\":\"{field.Name}\",\"value\":\"{fieldValue.ToString().Replace("`1", "")}\",\"type\":\"{field.PropertyType.Name.Replace("`1", "")}\"}},";
                     }
                 }
             }
