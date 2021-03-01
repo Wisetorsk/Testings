@@ -24,41 +24,70 @@ namespace TestingDiscordRPGStuff
             return jsonOut;
         }
 
-        private static string GetMethods(object obj)
+        public static string GetMethods(object obj)
         {
             string jsonString = "\"methods\":[";
-            foreach (var field in obj.GetType().GetMethods())
+            foreach (var method in obj.GetType().GetMethods())
             {
+                var methodInputs = "[";
+                bool gotInputs = false;
+                foreach (var inputVar in method.GetParameters())
+                {
+                    gotInputs = true;
+                    methodInputs += $"{{\"name\":\"{inputVar.Name}\",\"type\":\"{inputVar.ParameterType.Name.Replace("`1", "")}\"}},";
+                }
+                if(gotInputs)methodInputs = methodInputs.Remove(methodInputs.Length - 1, 1);
+                methodInputs += "]";
+                
+                var methodOutput = $"";
+                var methodBody = "";
 
+                try
+                {
+                    methodBody = method.GetMethodBody().ToString();
+                }
+                catch(NullReferenceException nr)
+                {
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                var methodReturnType = method.ReturnType.Name.Replace("`1", "");
+                jsonString += $"{{\"name\":\"{method.Name}\", \"inputs\":{methodInputs}, \"body\":\"{methodBody}\",\"returnType\":\"{methodReturnType}\"}},";
             }
+            jsonString = jsonString.Remove(jsonString.Length - 1, 1);
             jsonString += "]";
             return jsonString;
         }
 
-        private static string GetProperties(object obj)
+        public static string GetProperties(object obj, bool standalone=true)
         {
-            string jsonString = "\"properties\":[";
-            foreach (var field in obj.GetType().GetProperties())
+            string jsonString = "{\"properties\":[";
+            foreach (var property in obj.GetType().GetProperties())
             {
-                if (typeof(IEnumerable).IsAssignableFrom(field.PropertyType)
-                        && !typeof(string).IsAssignableFrom(field.PropertyType))
+
+                if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType)
+                        && !typeof(string).IsAssignableFrom(property.PropertyType))
                 { // Checks if the property is an enumerable. (List<T>)
-                    var fieldValue = field.GetValue(obj);
-                    var fieldType = $"\"{field.PropertyType.Name}";
+                    var fieldValue = property.GetValue(obj);
+                    var fieldType = $"\"{property.PropertyType.Name}";
                     var fieldContent = "[";
+                    
                     if (fieldValue is null)
                     {
                         fieldType += "<null>\"";
                         fieldContent += "]";
                     } else
                     {
-                        var entries = (IEnumerable)field.GetValue(obj);
+                        var entries = (IEnumerable)property.GetValue(obj);
                         foreach (var entry in entries) // A stupid hack because i'm too fucking tired to think properly
                         {
                             fieldType += $"<{entry.GetType().Name}>\"";
                             break;
                         }
-                        foreach (var entry in (IEnumerable)field.GetValue(obj))
+                        foreach (var entry in (IEnumerable)property.GetValue(obj))
                         {
                             if (entry is ValueType)
                             {
@@ -73,25 +102,94 @@ namespace TestingDiscordRPGStuff
                         fieldContent = fieldContent.Remove(fieldContent.Length - 1, 1);
                         fieldContent += "]";
                     }
-                    jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldContent},\"type\":{fieldType.Replace("`1", "")}}},";
+                    jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldContent},\"type\":{fieldType.Replace("`1", "")}}},";
                 }
                 else
                 {
-                    var fieldValue = field.GetValue(obj);
-                    if (typeof(ValueType).IsAssignableFrom(field.PropertyType))
+                    var fieldValue = property.GetValue(obj);
+                    if (typeof(ValueType).IsAssignableFrom(property.PropertyType))
                     {
                         if (fieldValue is bool)
                         {
-                            jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldValue.ToString().ToLower()},\"type\":\"{field.PropertyType.Name.Replace("`1", "")}\"}},";
+                            jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldValue.ToString().ToLower()},\"type\":\"{property.PropertyType.Name.Replace("`1", "")}\"}},";
                         }
                         else
                         {
-                            jsonString += $"{{\"name\":\"{field.Name}\",\"value\":{fieldValue},\"type\":\"{field.PropertyType.Name.Replace("`1", "")}\"}},";
+                            jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldValue},\"type\":\"{property.PropertyType.Name.Replace("`1", "")}\"}},";
                         }
                     }
                     else
                     {
-                        jsonString += $"{{\"name\":\"{field.Name}\",\"value\":\"{fieldValue.ToString().Replace("`1", "")}\",\"type\":\"{field.PropertyType.Name.Replace("`1", "")}\"}},";
+                        jsonString += $"{{\"name\":\"{property.Name}\",\"value\":\"{fieldValue.ToString().Replace("`1", "")}\",\"type\":\"{property.PropertyType.Name.Replace("`1", "")}\"}},";
+                    }
+                }
+            }
+            jsonString = jsonString.Remove(jsonString.Length - 1, 1);
+            jsonString += "]}";
+            return jsonString;
+        }
+
+        private protected static string GetProperties(object obj)
+        {
+            string jsonString = "\"properties\":[";
+            foreach (var property in obj.GetType().GetProperties())
+            {
+
+                if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType)
+                        && !typeof(string).IsAssignableFrom(property.PropertyType))
+                { // Checks if the property is an enumerable. (List<T>)
+                    var fieldValue = property.GetValue(obj);
+                    var fieldType = $"\"{property.PropertyType.Name}";
+                    var fieldContent = "[";
+
+                    if (fieldValue is null)
+                    {
+                        fieldType += "<null>\"";
+                        fieldContent += "]";
+                    }
+                    else
+                    {
+                        var entries = (IEnumerable)property.GetValue(obj);
+                        foreach (var entry in entries) // A stupid hack because i'm too fucking tired to think properly
+                        {
+                            fieldType += $"<{entry.GetType().Name}>\"";
+                            break;
+                        }
+                        foreach (var entry in (IEnumerable)property.GetValue(obj))
+                        {
+                            if (entry is ValueType)
+                            {
+                                fieldContent += $"{entry},";
+                            }
+                            else
+                            {
+                                fieldContent += $"\"{entry}\",";
+                            }
+
+                        }
+
+                        fieldContent = fieldContent.Remove(fieldContent.Length - 1, 1);
+                        fieldContent += "]";
+                    }
+                    jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldContent},\"type\":{fieldType.Replace("`1", "")}}},";
+                }
+                else
+                {
+                    var fieldValue = property.GetValue(obj);
+                    if (typeof(ValueType).IsAssignableFrom(property.PropertyType))
+                    {
+                        if (fieldValue is bool)
+                        {
+                            jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldValue.ToString().ToLower()},\"type\":\"{property.PropertyType.Name.Replace("`1", "")}\"}},";
+                        }
+                        else
+                        {
+                            jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldValue},\"type\":\"{property.PropertyType.Name.Replace("`1", "")}\"}},";
+                        }
+                    }
+                    else
+                    {
+                        jsonString += $"{{\"name\":\"{property.Name}\",\"value\":\"{fieldValue.ToString().Replace("`1", "")}\",\"type\":\"{property.PropertyType.Name.Replace("`1", "")}\"}},";
                     }
                 }
             }
@@ -108,14 +206,137 @@ namespace TestingDiscordRPGStuff
             return false;
         }
 
-        private static string GetFields(object obj)
+        private protected static string GetFields(object obj)
         {
             string jsonString = "\"fields\":[";
-            foreach (var field in obj.GetType().GetFields())
+            foreach (var property in obj.GetType().GetFields())
             {
+                if (typeof(IEnumerable).IsAssignableFrom(property.FieldType)
+                        && !typeof(string).IsAssignableFrom(property.FieldType))
+                { // Checks if the property is an enumerable. (List<T>)
+                    var fieldValue = property.GetValue(obj);
+                    var fieldType = $"\"{property.FieldType.Name}";
+                    var fieldContent = "[";
+                    if (fieldValue is null)
+                    {
+                        fieldType += "<null>\"";
+                        fieldContent += "]";
+                    }
+                    else
+                    {
+                        var entries = (IEnumerable)property.GetValue(obj);
+                        foreach (var entry in entries) // A stupid hack because i'm too fucking tired to think properly
+                        {
+                            fieldType += $"<{entry.GetType().Name}>\"";
+                            break;
+                        }
+                        foreach (var entry in (IEnumerable)property.GetValue(obj))
+                        {
+                            if (entry is ValueType)
+                            {
+                                fieldContent += $"{entry},";
+                            }
+                            else
+                            {
+                                fieldContent += $"\"{entry}\",";
+                            }
 
+                        }
+
+                        fieldContent = fieldContent.Remove(fieldContent.Length - 1, 1);
+                        fieldContent += "]";
+                    }
+                    jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldContent},\"type\":{fieldType.Replace("`1", "")}}},";
+                }
+                else
+                {
+                    var fieldValue = property.GetValue(obj);
+                    if (typeof(ValueType).IsAssignableFrom(property.FieldType))
+                    {
+                        if (fieldValue is bool)
+                        {
+                            jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldValue.ToString().ToLower()},\"type\":\"{property.FieldType.Name.Replace("`1", "")}\"}},";
+                        }
+                        else
+                        {
+                            jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldValue},\"type\":\"{property.FieldType.Name.Replace("`1", "")}\"}},";
+                        }
+                    }
+                    else
+                    {
+                        jsonString += $"{{\"name\":\"{property.Name}\",\"value\":\"{fieldValue.ToString().Replace("`1", "")}\",\"type\":\"{property.FieldType.Name.Replace("`1", "")}\"}},";
+                    }
+                }
             }
+            jsonString = jsonString.Remove(jsonString.Length - 1, 1);
             jsonString += "]";
+            return jsonString;
+        }
+
+        public static string GetFields(object obj, bool standalone=true)
+        {
+            string jsonString = "{\"fields\":[";
+            foreach (var property in obj.GetType().GetFields())
+            {
+                if (typeof(IEnumerable).IsAssignableFrom(property.FieldType)
+                        && !typeof(string).IsAssignableFrom(property.FieldType))
+                { // Checks if the property is an enumerable. (List<T>)
+                    var fieldValue = property.GetValue(obj);
+                    var fieldType = $"\"{property.FieldType.Name}";
+                    var fieldContent = "[";
+                    if (fieldValue is null)
+                    {
+                        fieldType += "<null>\"";
+                        fieldContent += "]";
+                    }
+                    else
+                    {
+                        var entries = (IEnumerable)property.GetValue(obj);
+                        foreach (var entry in entries) // A stupid hack because i'm too fucking tired to think properly
+                        {
+                            fieldType += $"<{entry.GetType().Name}>\"";
+                            break;
+                        }
+                        foreach (var entry in (IEnumerable)property.GetValue(obj))
+                        {
+                            if (entry is ValueType)
+                            {
+                                fieldContent += $"{entry},";
+                            }
+                            else
+                            {
+                                fieldContent += $"\"{entry}\",";
+                            }
+
+                        }
+
+                        fieldContent = fieldContent.Remove(fieldContent.Length - 1, 1);
+                        fieldContent += "]";
+                    }
+                    jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldContent},\"type\":{fieldType.Replace("`1", "")}}},";
+                }
+                else
+                {
+                    var fieldValue = property.GetValue(obj);
+                    if (typeof(ValueType).IsAssignableFrom(property.FieldType))
+                    {
+                        if (fieldValue is bool)
+                        {
+                            jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldValue.ToString().ToLower()},\"type\":\"{property.FieldType.Name.Replace("`1", "")}\"}},";
+                        }
+                        else
+                        {
+                            jsonString += $"{{\"name\":\"{property.Name}\",\"value\":{fieldValue},\"type\":\"{property.FieldType.Name.Replace("`1", "")}\"}},";
+                        }
+                    }
+                    else
+                    {
+                        jsonString += $"{{\"name\":\"{property.Name}\",\"value\":\"{fieldValue.ToString().Replace("`1", "")}\",\"type\":\"{property.FieldType.Name.Replace("`1", "")}\"}},";
+                    }
+                }
+            }
+            jsonString = jsonString.Remove(jsonString.Length - 1, 1);
+            jsonString += "]}";
             return jsonString;
         }
 

@@ -1,29 +1,57 @@
 {
-  "objectName":"<name>",
-  "fields":[
-    {"name":"<name>","type":"<type>","value":"<value>"},
-    {"name":"<name>","type":"<type>","value":"<value>"}
-    ],
-    
-  "properties": [
-    {"name":"<name>","type":"<type>","value":"<value>", "get":"<expression>", "set":"<expression>"},
-    {"name":"<name>","type":"<type>","value":"<value>", "get":"<expression>", "set":"<expression>"}
-    ],
-    
-  "methods": [
-    {"name":"<name>",
-      "inputs":[
-        {"type":"<type>", "variablename":"<name>"}
-        ],
-      "output":{"type":"<type>"},
-      "expression":"<expression>"
+  "fields": [
+    {
+      "name": "<name>",
+      "type": "<type>",
+      "value": "<value>"
     },
-    {"name":"<name>",
-      "inputs":[
-        {"type":"<type>", "variablename":"<name>"}
-        ],
-      "output":{"type":"<type>"},
-      "expression":"<expression>"
+    {
+      "name": "<name>",
+      "type": "<type>",
+      "value": "<value>"
     }
-    ]
+  ],
+  "methods": [
+    {
+      "name": "<name>",
+      "inputs": [
+        {
+          "type": "<type>",
+          "variablename": "<name>"
+        }
+      ],
+      "output": { "type": "<type>" },
+      "expression": "<expression>"
+    },
+    {
+      "name": "<name>",
+      "inputs": [
+        {
+          "type": "<type>",
+          "variablename": "<name>"
+        }
+      ],
+      "output": { "type": "<type>" },
+      "expression": "<expression>"
+    }
+  ],
+
+  "objectName": "<name>",
+
+  "properties": [
+    {
+      "name": "<name>",
+      "type": "<type>",
+      "value": "<value>",
+      "get": "<expression>",
+      "set": "<expression>"
+    },
+    {
+      "name": "<name>",
+      "type": "<type>",
+      "value": "<value>",
+      "get": "<expression>",
+      "set": "<expression>"
+    }
+  ]
 }

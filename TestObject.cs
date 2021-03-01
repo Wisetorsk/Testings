@@ -16,6 +16,7 @@ namespace TestingDiscordRPGStuff
 		public List<Random> Empty { get; set; }
 		public int AnotherVal = 2345;
 		public Func<int> TestFunc { get; set; } = () => 57;
+		public int TestGetter { get { return Value1 * 10; } }
 
 		public int Math(int a, int b)
 		{

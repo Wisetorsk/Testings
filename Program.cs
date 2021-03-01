@@ -11,8 +11,9 @@ namespace TestingDiscordRPGStuff
         static void Main(string[] args)
         {
             var t = new TestObject();
-            var p = JSONhandler.ObjectToJson(t);
-            Console.WriteLine(p);
+            Console.WriteLine(JSONhandler.ObjectToJson(t));
+            //Console.WriteLine(JSONhandler.GetProperties(t));
+            //Console.WriteLine(JSONhandler.GetFields(t));
 
             //t.ReadFromJson(p);
             //var newObj = JSONhandler.CreateObjectFromJson(p);
