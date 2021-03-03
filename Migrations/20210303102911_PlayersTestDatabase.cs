@@ -12,6 +12,7 @@ namespace TestingDiscordRPGStuff.Migrations
                 {
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<ulong>(type: "ulong", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Health = table.Column<int>(type: "int", nullable: false),
                     Defense = table.Column<int>(type: "int", nullable: false),

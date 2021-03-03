@@ -30,8 +30,8 @@ namespace TestingDiscordRPGStuff
             }
             
             var id = players[4].ID;
-            //var res = DBHandler.GetPlayer(id);
-            //Console.WriteLine((res is null) ? "Could not find player" : res.ToString());
+            var res = DBHandler.GetPlayer(id);
+            Console.WriteLine((res is null) ? "Could not find player" : res.ToString());
         }
 
     }

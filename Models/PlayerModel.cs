@@ -9,6 +9,7 @@ namespace TestingDiscordRPGStuff.Models
     {
         [Key]
         public Int32 ID { get; set; }
+        public ulong UserID { get; set; }
         public string Name { get; set; }
         public int Health { get; set; }
         public int Defense { get; set; }
