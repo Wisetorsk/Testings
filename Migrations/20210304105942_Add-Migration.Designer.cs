@@ -9,8 +9,8 @@ using TestingDiscordRPGStuff.Models;
 namespace TestingDiscordRPGStuff.Migrations
 {
     [DbContext(typeof(EFContext))]
-    [Migration("20210303102911_PlayersTestDatabase")]
-    partial class PlayersTestDatabase
+    [Migration("20210304105942_Add-Migration")]
+    partial class AddMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -22,10 +22,10 @@ namespace TestingDiscordRPGStuff.Migrations
 
             modelBuilder.Entity("TestingDiscordRPGStuff.Models.PlayerModel", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<decimal>("ID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("decimal(20,0)")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None);
 
                     b.Property<int>("Attack")
                         .HasColumnType("int");

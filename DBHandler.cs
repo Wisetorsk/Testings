@@ -15,13 +15,13 @@ namespace TestingDiscordRPGStuff
 
             using (var db = new EFContext())
             {
-                var lookup = db.Players.Find((int)player.ID);
+                var lookup = db.Players.Find((ulong)player.ID);
                 if (!(lookup is null))
                 {
-                    if (lookup.UserID == player.ID) return;
+                    if (lookup.ID == player.ID) return;
                 }
                 var entity = new PlayerModel() {
-                    UserID = player.ID,
+                    ID = player.ID,
                     Name = player.Name,
                     Health = player.Health,
                     Defense = player.Defense,
@@ -36,9 +36,9 @@ namespace TestingDiscordRPGStuff
         {
             using (var db = new EFContext())
             {
-                var result = db.Players.Where(i => i.UserID == ID).Select();
+                var result = db.Players.Where(i => i.ID == ID).FirstOrDefault();
                 if (result is null) return null;
-                var p = new Player(result.UserID, result.Name, result.Health, result.Defense, result.Attack);
+                var p = new Player((ulong)result.ID, result.Name, result.Health, result.Defense, result.Attack);
                 return p;
             }
         }

@@ -20,10 +20,10 @@ namespace TestingDiscordRPGStuff.Migrations
 
             modelBuilder.Entity("TestingDiscordRPGStuff.Models.PlayerModel", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<decimal>("ID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("decimal(20,0)")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None);
 
                     b.Property<int>("Attack")
                         .HasColumnType("int");
@@ -36,9 +36,6 @@ namespace TestingDiscordRPGStuff.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("UserID")
-                        .HasColumnType("decimal(20,0)");
 
                     b.HasKey("ID");
 

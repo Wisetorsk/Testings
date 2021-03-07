@@ -2,7 +2,7 @@
 
 namespace TestingDiscordRPGStuff.Migrations
 {
-    public partial class PlayersTestDatabase : Migration
+    public partial class AddMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -10,9 +10,7 @@ namespace TestingDiscordRPGStuff.Migrations
                 name: "Players",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserID = table.Column<ulong>(type: "ulong", nullable: false),
+                    ID = table.Column<decimal>(type: "decimal(20,0)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Health = table.Column<int>(type: "int", nullable: false),
                     Defense = table.Column<int>(type: "int", nullable: false),

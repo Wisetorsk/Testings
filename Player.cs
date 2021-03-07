@@ -7,6 +7,7 @@ namespace TestingDiscordRPGStuff
 {
     public class Player : IPlayer
     {
+        [Key]
         public ulong ID { get; set; }
         public string Name { get; set; }
         public int Health { get; set; }
@@ -21,5 +22,11 @@ namespace TestingDiscordRPGStuff
             Defense = df;
             Attack = at;
         }
+
+        public override string ToString()
+        {
+            return $"ID:{ID}\nName:{Name}\nHealth:{Health}\nDefense:{Defense}\nAttack:{Attack}\n";
+        }
     }
+
 }
